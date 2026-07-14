@@ -1,0 +1,22 @@
+{
+  "name": "ingest",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@neondatabase/serverless": "^1.1.0",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.18.1",
+    "dotenv": "^17.4.2",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "tsx": "^4.23.0",
+    "typescript": "^5.9.3"
+  }
+}

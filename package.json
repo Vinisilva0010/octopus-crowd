@@ -1,0 +1,5 @@
+{
+  "name": "octopus-crowd",
+  "private": true,
+  "packageManager": "pnpm@11.13.0"
+}
