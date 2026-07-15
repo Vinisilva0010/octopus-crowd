@@ -9,6 +9,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@neondatabase/serverless": "^1.1.0",
+    "@solana/spl-token": "^0.4.15",
     "@solana/web3.js": "^1.98.4",
     "axios": "^1.18.1",
     "dotenv": "^17.4.2",
