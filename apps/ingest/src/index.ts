@@ -111,6 +111,10 @@ async function consumeStream(path: "scores" | "odds", jwt: string) {
         continue;
       }
 
+      if (path === "scores") {
+        console.log(`[scores][debug] event="${eventType}" fixtureId=${parsed.fixtureId ?? parsed.FixtureId} dataLen=${dataLine.length}`);
+      }
+
       if (eventType === "heartbeat") continue;
 
       const fixtureId = parsed.FixtureId ?? parsed.fixtureId ?? null;
