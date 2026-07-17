@@ -1,3 +1,4 @@
+import WalletButton from "@/components/WalletButton";
 async function getFixtures() {
   const res = await fetch("http://localhost:3000/api/fixtures", { cache: "no-store" });
   if (!res.ok) return [];
@@ -9,7 +10,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-2xl font-bold mb-6">Octopus Crowd — Fixtures</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Octopus Crowd — Fixtures</h1>
+        <WalletButton />
+      </div>
       <div className="space-y-3">
         {fixtures.length === 0 && <p className="text-zinc-400">Nenhuma fixture carregada ainda.</p>}
         {fixtures.map((f: any, i: number) => (

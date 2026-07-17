@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 type ChallengeData = {
   id: number;
@@ -12,11 +13,11 @@ type ChallengeData = {
   correct_answer: string | null;
 };
 
-// Wallet de teste fixa, só pra provar o fluxo na tela.
-// Troca pela wallet real assim que o login com Solana estiver pronto.
-const TEST_WALLET = "teste_wallet_ui";
+
+
 
 export default function MatchRoom({ params }: { params: Promise<{ fixtureId: string }> }) {
+  const { publicKey } = useWallet();
   const [fixtureId, setFixtureId] = useState<string | null>(null);
   const [challenge, setChallenge] = useState<ChallengeData | null>(null);
   const [myAnswer, setMyAnswer] = useState<string | null>(null);
@@ -43,12 +44,12 @@ export default function MatchRoom({ params }: { params: Promise<{ fixtureId: str
   }
 
   async function respond(answer: string) {
-    if (!challenge) return;
+    if (!challenge || !publicKey) return;
     setMyAnswer(answer);
     const res = await fetch("/api/respond", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ challengeId: challenge.id, walletPubkey: TEST_WALLET, answer }),
+      body: JSON.stringify({ challengeId: challenge.id, walletPubkey: publicKey.toBase58(), answer }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -73,17 +74,20 @@ export default function MatchRoom({ params }: { params: Promise<{ fixtureId: str
             <p className="text-sm text-zinc-400 mb-4">
               Fecha em: {new Date(challenge.closes_at).toLocaleTimeString()}
             </p>
+            {!publicKey && (
+              <p className="text-sm text-yellow-500 mb-3">Conecta sua wallet pra poder responder.</p>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={() => respond("participant1")}
-                disabled={myAnswer !== null}
+                disabled={myAnswer !== null || !publicKey}
                 className="flex-1 border border-zinc-700 rounded-lg py-3 hover:border-white disabled:opacity-40"
               >
                 Time 1
               </button>
               <button
                 onClick={() => respond("participant2")}
-                disabled={myAnswer !== null}
+                disabled={myAnswer !== null || !publicKey}
                 className="flex-1 border border-zinc-700 rounded-lg py-3 hover:border-white disabled:opacity-40"
               >
                 Time 2
