@@ -2,6 +2,7 @@ import { config as loadEnv } from "dotenv";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { neon } from "@neondatabase/serverless";
+import { isGoalEvent, resolveGoalScorer } from "core";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,6 +21,41 @@ if (!API_TOKEN) throw new Error("TXLINE_API_TOKEN não definido no .env");
 if (!DATABASE_URL) throw new Error("DATABASE_URL não definido no .env");
 
 const sql = neon(DATABASE_URL);
+
+
+
+const WEB_API_BASE_URL = process.env.WEB_API_BASE_URL ?? "http://localhost:3000";
+
+async function resolveIfGoal(fixtureId: number | null, payload: any) {
+  if (fixtureId === null || !isGoalEvent(payload)) return;
+
+  const scorer = resolveGoalScorer(payload);
+  if (!scorer) {
+    console.log(`[gol] evento de gol sem participant identificável, fixture=${fixtureId}`);
+    return;
+  }
+
+  const [openChallenge] = await sql`
+    SELECT id FROM challenges WHERE fixture_id = ${fixtureId} AND status = 'open'
+  `;
+
+  if (!openChallenge) {
+    console.log(`[gol] gol real detectado (fixture=${fixtureId}, ${scorer}), mas não tinha desafio aberto`);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${WEB_API_BASE_URL}/api/resolve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ challengeId: openChallenge.id, correctAnswer: scorer }),
+    });
+    const body = await res.json();
+    console.log(`[gol] desafio ${openChallenge.id} resolvido automaticamente:`, body);
+  } catch (err) {
+    console.error(`[gol] falha ao resolver desafio ${openChallenge.id}:`, err);
+  }
+}
 
 type RawEvent = {
   source: "scores" | "odds";
@@ -122,6 +158,8 @@ async function consumeStream(path: "scores" | "odds", jwt: string) {
 
       console.log(`[${path}] fixture=${fixtureId} ts=${ts}`);
       buffer.push({ source: path, eventId, fixtureId, ts, payload: parsed });
+
+      if (path === "scores") await resolveIfGoal(fixtureId, parsed);
     }
   }
 }
