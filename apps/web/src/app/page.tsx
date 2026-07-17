@@ -1,6 +1,8 @@
 import WalletButton from "@/components/WalletButton";
+import { getBaseUrl } from "@/lib/base-url";
+
 async function getFixtures() {
-  const res = await fetch("http://localhost:3000/api/fixtures", { cache: "no-store" });
+  const res = await fetch(`${getBaseUrl()}/api/fixtures`, { cache: "no-store" });
   if (!res.ok) return [];
   return res.json();
 }
