@@ -113,12 +113,7 @@ export default function MatchRoom({ params }: { params: Promise<{ fixtureId: str
 
         {feedback && <p className="mt-4 text-sm text-yellow-400">{feedback}</p>}
 
-        <button
-          onClick={openNewChallenge}
-          className="mt-6 text-xs text-zinc-500 underline"
-        >
-          Abrir novo desafio (teste)
-        </button>
+        
       </section>
     </main>
   );

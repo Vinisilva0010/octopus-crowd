@@ -26,8 +26,29 @@ const sql = neon(DATABASE_URL);
 
 const WEB_API_BASE_URL = process.env.WEB_API_BASE_URL ?? "http://localhost:3000";
 
+async function openChallenge(fixtureId: number) {
+  try {
+    await fetch(`${WEB_API_BASE_URL}/api/challenges/${fixtureId}`, { method: "POST" });
+    console.log(`[auto] novo desafio aberto pra fixture=${fixtureId}`);
+  } catch (err) {
+    console.error(`[auto] falha ao abrir desafio pra fixture=${fixtureId}:`, err);
+  }
+}
+
 async function resolveIfGoal(fixtureId: number | null, payload: any) {
-  if (fixtureId === null || !isGoalEvent(payload)) return;
+  if (fixtureId === null) return;
+
+  if (payload.Action === "kickoff") {
+    await openChallenge(fixtureId);
+    return;
+  }
+
+  if (payload.Action === "game_finalised") {
+    console.log(`[auto] jogo finalizado, fixture=${fixtureId} — não abre mais desafio`);
+    return;
+  }
+
+  if (!isGoalEvent(payload)) return;
 
   const scorer = resolveGoalScorer(payload);
   if (!scorer) {
@@ -35,29 +56,30 @@ async function resolveIfGoal(fixtureId: number | null, payload: any) {
     return;
   }
 
-  const [openChallenge] = await sql`
+ const [currentChallenge] = await sql`
     SELECT id FROM challenges WHERE fixture_id = ${fixtureId} AND status = 'open'
   `;
 
-  if (!openChallenge) {
+  if (!currentChallenge) {
     console.log(`[gol] gol real detectado (fixture=${fixtureId}, ${scorer}), mas não tinha desafio aberto`);
     return;
   }
 
-  try {
+ try {
     const res = await fetch(`${WEB_API_BASE_URL}/api/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        challengeId: openChallenge.id,
+        challengeId: currentChallenge.id,
         correctAnswer: scorer,
         resolvingEventSeq: payload.Seq ?? null,
       }),
     });
     const body = await res.json();
-    console.log(`[gol] desafio ${openChallenge.id} resolvido automaticamente:`, body);
+    console.log(`[gol] desafio ${currentChallenge.id} resolvido automaticamente:`, body);
+    await openChallenge(fixtureId);
   } catch (err) {
-    console.error(`[gol] falha ao resolver desafio ${openChallenge.id}:`, err);
+    console.error(`[gol] falha ao resolver desafio ${currentChallenge.id}:`, err);
   }
 }
 
