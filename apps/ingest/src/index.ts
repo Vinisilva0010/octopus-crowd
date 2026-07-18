@@ -48,7 +48,11 @@ async function resolveIfGoal(fixtureId: number | null, payload: any) {
     const res = await fetch(`${WEB_API_BASE_URL}/api/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ challengeId: openChallenge.id, correctAnswer: scorer }),
+      body: JSON.stringify({
+        challengeId: openChallenge.id,
+        correctAnswer: scorer,
+        resolvingEventSeq: payload.Seq ?? null,
+      }),
     });
     const body = await res.json();
     console.log(`[gol] desafio ${openChallenge.id} resolvido automaticamente:`, body);

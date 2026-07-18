@@ -97,9 +97,18 @@ export default function MatchRoom({ params }: { params: Promise<{ fixtureId: str
         )}
 
         {challenge && challenge.status === "resolved" && (
-          <p className="text-zinc-300">
-            Resolvido — resposta certa: <b>{challenge.correct_answer}</b>
-          </p>
+          <div>
+            <p className="text-zinc-300 mb-2">
+              Resolvido — resposta certa: <b>{challenge.correct_answer}</b>
+            </p>
+            
+              <a href={`/api/proof/${challenge.id}`}
+              target="_blank"
+              className="text-xs text-blue-400 underline"
+            >
+              Ver prova verificável (Merkle proof da TxLINE)
+            </a>
+          </div>
         )}
 
         {feedback && <p className="mt-4 text-sm text-yellow-400">{feedback}</p>}

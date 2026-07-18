@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "DATABASE_URL ausente" }, { status: 500 });
   }
 
-  const { challengeId, correctAnswer } = await req.json();
+  const { challengeId, correctAnswer, resolvingEventSeq } = await req.json();
   if (!challengeId || !correctAnswer) {
     return NextResponse.json({ error: "challengeId e correctAnswer são obrigatórios" }, { status: 400 });
   }
@@ -81,7 +81,8 @@ export async function POST(req: Request) {
   }
 
   await sql`
-    UPDATE challenges SET status = 'resolved', correct_answer = ${correctAnswer}, resolved_at = now()
+    UPDATE challenges
+    SET status = 'resolved', correct_answer = ${correctAnswer}, resolved_at = now(), resolving_event_seq = ${resolvingEventSeq ?? null}
     WHERE id = ${challengeId}
   `;
 
