@@ -19,7 +19,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 function profileLine(stats: Stats): string {
-  if (stats.totalAnswered === 0) return "Ainda sem histórico — responde seu primeiro desafio.";
+  if (stats.totalAnswered === 0) return "No history yet — answer your first challenge.";
 
   const specialty = bestChallengeType(stats.statsByType, 3);
   if (specialty) {
@@ -48,46 +48,62 @@ export default function Profile() {
   }, [publicKey]);
 
   return (
-    <main className="min-h-screen bg-black text-white p-8">
-      <a href="/" className="text-zinc-400 text-sm">&larr; voltar</a>
+    <main className="relative min-h-screen overflow-x-hidden bg-violet-200">
+      <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-violet-700 via-blue-600 to-yellow-400" />
 
-      <div className="flex items-center justify-between mt-2 mb-8">
-        <h1 className="text-2xl font-bold">Perfil</h1>
-        <WalletButton />
-      </div>
+      <div className="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <a href="/" className="back-chip">
+          &larr; back
+        </a>
 
-      {!publicKey && (
-        <p className="text-zinc-400">Conecta sua wallet pra ver seu perfil.</p>
-      )}
+        <div className="flex items-center justify-between mt-4">
+          <h1 className="hero-title-outline text-5xl font-black uppercase leading-[0.85] tracking-tight sm:text-7xl">
+            Profile
+          </h1>
+          <WalletButton />
+        </div>
 
-      {publicKey && !stats && <p className="text-zinc-500">Carregando...</p>}
+        {!publicKey && (
+          <div className="panel mt-6 text-center">
+            <p className="font-bold text-zinc-700">Connect your wallet to see your profile.</p>
+          </div>
+        )}
 
-      {publicKey && stats && (
-        <div className="space-y-6">
-          <p className="text-xs text-zinc-500 break-all">{stats.walletPubkey}</p>
+        {publicKey && !stats && <p className="mt-6 font-bold text-zinc-700">Loading...</p>}
 
-          <p className="text-lg text-zinc-200">{profileLine(stats)}</p>
+        {publicKey && stats && (
+          <div className="mt-6 space-y-6">
+            <p className="break-all font-mono text-xs font-bold text-zinc-600">{stats.walletPubkey}</p>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="border border-zinc-800 rounded-lg p-4">
-              <p className="text-xs text-zinc-500">Streak atual</p>
-              <p className="text-3xl font-bold">{stats.currentStreak}</p>
+            <div className="panel">
+              <p className="text-lg font-black text-black">{profileLine(stats)}</p>
             </div>
-            <div className="border border-zinc-800 rounded-lg p-4">
-              <p className="text-xs text-zinc-500">Melhor streak</p>
-              <p className="text-3xl font-bold">{stats.bestStreak}</p>
-            </div>
-            <div className="border border-zinc-800 rounded-lg p-4">
-              <p className="text-xs text-zinc-500">Acertos</p>
-              <p className="text-3xl font-bold">{stats.totalCorrect}</p>
-            </div>
-            <div className="border border-zinc-800 rounded-lg p-4">
-              <p className="text-xs text-zinc-500">Respondidos</p>
-              <p className="text-3xl font-bold">{stats.totalAnswered}</p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="stat-box">
+                <p className="font-mono text-xs font-bold uppercase tracking-widest text-blue-700">
+                  Current streak
+                </p>
+                <p className="text-3xl font-black text-black">{stats.currentStreak}</p>
+              </div>
+              <div className="stat-box">
+                <p className="font-mono text-xs font-bold uppercase tracking-widest text-blue-700">
+                  Best streak
+                </p>
+                <p className="text-3xl font-black text-black">{stats.bestStreak}</p>
+              </div>
+              <div className="stat-box">
+                <p className="font-mono text-xs font-bold uppercase tracking-widest text-blue-700">Correct</p>
+                <p className="text-3xl font-black text-black">{stats.totalCorrect}</p>
+              </div>
+              <div className="stat-box">
+                <p className="font-mono text-xs font-bold uppercase tracking-widest text-blue-700">Answered</p>
+                <p className="text-3xl font-black text-black">{stats.totalAnswered}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }

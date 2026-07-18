@@ -22,30 +22,44 @@ export default async function Ranking() {
   const rows = await getRanking();
 
   return (
-    <main className="min-h-screen bg-black text-white p-8">
-      <a href="/" className="text-zinc-400 text-sm">&larr; voltar</a>
-      <h1 className="text-2xl font-bold mt-2 mb-6">Ranking</h1>
+    <main className="relative min-h-screen overflow-x-hidden bg-violet-200">
+      <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-violet-700 via-blue-600 to-yellow-400" />
 
-      {rows.length === 0 && (
-        <p className="text-zinc-500">Ninguém no ranking ainda — seja o primeiro a responder um desafio.</p>
-      )}
+      <div className="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <a href="/" className="back-chip">
+          &larr; back
+        </a>
 
-      <div className="space-y-2">
-        {rows.map((r: any, i: number) => (
-          <div
-            key={r.wallet_pubkey}
-            className="flex items-center justify-between border border-zinc-800 rounded-lg p-4"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-zinc-500 w-6 text-right">{i + 1}</span>
-              <span className="font-mono text-sm">{shortWallet(r.wallet_pubkey)}</span>
-            </div>
-            <div className="flex gap-6 text-sm text-zinc-400">
-              <span>Melhor streak: <b className="text-white">{r.best_streak}</b></span>
-              <span>{r.total_correct}/{r.total_answered} acertos</span>
-            </div>
+        <h1 className="hero-title-outline mt-4 text-5xl font-black uppercase leading-[0.85] tracking-tight sm:text-7xl">
+          Ranking
+        </h1>
+
+        {rows.length === 0 && (
+          <div className="panel mt-6 text-center">
+            <p className="font-bold text-zinc-700">
+              No one on the leaderboard yet — be the first to answer a challenge.
+            </p>
           </div>
-        ))}
+        )}
+
+        <div className="mt-6 space-y-3">
+          {rows.map((r: any, i: number) => (
+            <div key={r.wallet_pubkey} className="rank-row">
+              <div className="flex items-center gap-4">
+                <span className="rank-badge">{i + 1}</span>
+                <span className="font-mono text-sm font-bold">{shortWallet(r.wallet_pubkey)}</span>
+              </div>
+              <div className="flex gap-6 text-sm font-bold text-zinc-700">
+                <span>
+                  Best streak: <b className="text-black">{r.best_streak}</b>
+                </span>
+                <span>
+                  {r.total_correct}/{r.total_answered} correct
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </main>
   );
