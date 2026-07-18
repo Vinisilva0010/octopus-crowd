@@ -1,10 +1,12 @@
 import WalletButton from "@/components/WalletButton";
-import { getBaseUrl } from "@/lib/base-url";
+import { fetchFixtures } from "@/lib/txline";
 
 async function getFixtures() {
-  const res = await fetch(`${getBaseUrl()}/api/fixtures`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    return await fetchFixtures();
+  } catch {
+    return [];
+  }
 }
 
 export default async function Home() {

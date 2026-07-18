@@ -1,9 +1,17 @@
-import { getBaseUrl } from "@/lib/base-url";
+import { neon } from "@neondatabase/serverless";
 
 async function getRanking() {
-  const res = await fetch(`${getBaseUrl()}/api/ranking`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
+  const DATABASE_URL = process.env.DATABASE_URL;
+  if (!DATABASE_URL) return [];
+
+  const sql = neon(DATABASE_URL);
+  return sql`
+    SELECT wallet_pubkey, current_streak, best_streak, total_correct, total_answered
+    FROM user_stats
+    WHERE total_answered > 0
+    ORDER BY best_streak DESC, total_correct DESC
+    LIMIT 50
+  `;
 }
 
 function shortWallet(wallet: string): string {
