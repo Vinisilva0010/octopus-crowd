@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import WalletButton from "@/components/WalletButton";
+import { bestChallengeType, type StatsByType } from "core";
 
 type Stats = {
   walletPubkey: string;
@@ -10,10 +11,22 @@ type Stats = {
   bestStreak: number;
   totalCorrect: number;
   totalAnswered: number;
+  statsByType: StatsByType;
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  next_goal: "predicting goals",
 };
 
 function profileLine(stats: Stats): string {
   if (stats.totalAnswered === 0) return "Ainda sem histórico — responde seu primeiro desafio.";
+
+  const specialty = bestChallengeType(stats.statsByType, 3);
+  if (specialty) {
+    const label = TYPE_LABELS[specialty] ?? specialty;
+    return `You're especially good at ${label}.`;
+  }
+
   const rate = stats.totalCorrect / stats.totalAnswered;
   if (rate >= 0.7) return "You read the game well.";
   if (rate >= 0.4) return "You're getting the hang of it.";

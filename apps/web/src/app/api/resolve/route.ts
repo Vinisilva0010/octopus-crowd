@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
-import { gradeResponses, applyResultToStats, emptyStats } from "core";
+import { gradeResponses, applyResultToStats, applyResultToTypeStats, emptyStats } from "core";
 
 /**
  * Resolve manualmente um desafio específico dado o vencedor real.
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const sql = neon(DATABASE_URL);
 
   const [challenge] = await sql`
-    SELECT id, status FROM challenges WHERE id = ${challengeId}
+    SELECT id, status, type FROM challenges WHERE id = ${challengeId}
   `;
   if (!challenge) {
     return NextResponse.json({ error: "Desafio não encontrado" }, { status: 404 });
@@ -61,16 +61,20 @@ export async function POST(req: Request) {
         }
       : emptyStats(g.walletPubkey);
 
+    const currentStatsByType = existingStats?.stats_by_type ?? {};
+
     const updated = applyResultToStats(currentStats, g.isCorrect);
+    const updatedStatsByType = applyResultToTypeStats(currentStatsByType, challenge.type, g.isCorrect);
 
     await sql`
-      INSERT INTO user_stats (wallet_pubkey, current_streak, best_streak, total_correct, total_answered)
-      VALUES (${updated.walletPubkey}, ${updated.currentStreak}, ${updated.bestStreak}, ${updated.totalCorrect}, ${updated.totalAnswered})
+      INSERT INTO user_stats (wallet_pubkey, current_streak, best_streak, total_correct, total_answered, stats_by_type)
+      VALUES (${updated.walletPubkey}, ${updated.currentStreak}, ${updated.bestStreak}, ${updated.totalCorrect}, ${updated.totalAnswered}, ${JSON.stringify(updatedStatsByType)})
       ON CONFLICT (wallet_pubkey) DO UPDATE SET
         current_streak = ${updated.currentStreak},
         best_streak = ${updated.bestStreak},
         total_correct = ${updated.totalCorrect},
-        total_answered = ${updated.totalAnswered}
+        total_answered = ${updated.totalAnswered},
+        stats_by_type = ${JSON.stringify(updatedStatsByType)}
     `;
 
     results.push({ walletPubkey: g.walletPubkey, isCorrect: g.isCorrect, newStreak: updated.currentStreak });
@@ -82,4 +86,4 @@ export async function POST(req: Request) {
   `;
 
   return NextResponse.json({ challengeId, correctAnswer, results });
-}
+} 

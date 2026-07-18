@@ -71,3 +71,44 @@ describe("applyResultToStats", () => {
     expect(stats.totalCorrect).toBe(2);
   });
 });
+
+
+import { applyResultToTypeStats, bestChallengeType } from "./challenges";
+
+describe("applyResultToTypeStats", () => {
+  it("cria o contador do tipo na primeira resposta", () => {
+    const result = applyResultToTypeStats({}, "next_goal", true);
+    expect(result.next_goal).toEqual({ correct: 1, total: 1 });
+  });
+
+  it("acumula corretamente ao longo de várias respostas", () => {
+    let stats = applyResultToTypeStats({}, "next_goal", true);
+    stats = applyResultToTypeStats(stats, "next_goal", false);
+    stats = applyResultToTypeStats(stats, "next_corner", true);
+    expect(stats.next_goal).toEqual({ correct: 1, total: 2 });
+    expect(stats.next_corner).toEqual({ correct: 1, total: 1 });
+  });
+});
+
+describe("bestChallengeType", () => {
+  it("retorna null se nenhum tipo atingiu o mínimo de respostas", () => {
+    const stats = { next_goal: { correct: 2, total: 2 } };
+    expect(bestChallengeType(stats, 3)).toBe(null);
+  });
+
+  it("escolhe o tipo com maior taxa de acerto, respeitando o mínimo", () => {
+    const stats = {
+      next_goal: { correct: 2, total: 5 },
+      next_corner: { correct: 4, total: 5 },
+    };
+    expect(bestChallengeType(stats, 3)).toBe("next_corner");
+  });
+
+  it("ignora tipo com poucas respostas mesmo com 100% de acerto", () => {
+    const stats = {
+      next_goal: { correct: 1, total: 1 },
+      next_corner: { correct: 3, total: 5 },
+    };
+    expect(bestChallengeType(stats, 3)).toBe("next_corner");
+  });
+});

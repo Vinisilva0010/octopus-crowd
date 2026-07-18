@@ -14,7 +14,7 @@ export async function GET(
   const sql = neon(DATABASE_URL);
 
   const [stats] = await sql`
-    SELECT wallet_pubkey, current_streak, best_streak, total_correct, total_answered
+    SELECT wallet_pubkey, current_streak, best_streak, total_correct, total_answered, stats_by_type
     FROM user_stats WHERE wallet_pubkey = ${wallet}
   `;
 
@@ -28,11 +28,12 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({
+ return NextResponse.json({
     walletPubkey: stats.wallet_pubkey,
     currentStreak: stats.current_streak,
     bestStreak: stats.best_streak,
     totalCorrect: stats.total_correct,
     totalAnswered: stats.total_answered,
+    statsByType: stats.stats_by_type ?? {},
   });
 }

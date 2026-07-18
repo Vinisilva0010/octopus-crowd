@@ -80,3 +80,50 @@ export function applyResultToStats(stats: UserStats, isCorrect: boolean): UserSt
 export function emptyStats(walletPubkey: string): UserStats {
   return { walletPubkey, currentStreak: 0, bestStreak: 0, totalCorrect: 0, totalAnswered: 0 };
 }
+
+
+export type StatsByType = Record<string, { correct: number; total: number }>;
+
+/**
+ * Atualiza o contador de acerto por tipo de desafio (next_goal, next_corner, etc).
+ * Isso é o que alimenta frases como "você é melhor prevendo cartão do que gol" —
+ * sem isso, o perfil é só um número de streak, igual a qualquer concorrente.
+ */
+export function applyResultToTypeStats(
+  statsByType: StatsByType,
+  challengeType: string,
+  isCorrect: boolean
+): StatsByType {
+  const current = statsByType[challengeType] ?? { correct: 0, total: 0 };
+  return {
+    ...statsByType,
+    [challengeType]: {
+      correct: current.correct + (isCorrect ? 1 : 0),
+      total: current.total + 1,
+    },
+  };
+}
+
+/**
+ * Acha o tipo de desafio onde o usuário tem a maior taxa de acerto,
+ * exigindo um mínimo de respostas pra não gerar frase precipitada
+ * (ex: 1 acerto em 1 resposta não vira "especialista" ainda).
+ */
+export function bestChallengeType(
+  statsByType: StatsByType,
+  minAnswered = 3
+): string | null {
+  let best: string | null = null;
+  let bestRate = -1;
+
+  for (const [type, s] of Object.entries(statsByType)) {
+    if (s.total < minAnswered) continue;
+    const rate = s.correct / s.total;
+    if (rate > bestRate) {
+      bestRate = rate;
+      best = type;
+    }
+  }
+
+  return best;
+}
